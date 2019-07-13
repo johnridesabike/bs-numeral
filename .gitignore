@@ -1,0 +1,15 @@
+.DS_Store
+.idea
+.cache
+/dist
+*.iml
+/node_modules*
+/lib/bs
+/lib/js/example
+/example/bundle*.js
+finalOutput/*.js
+npm-debug.log
+*.js
+.merlin
+.bsb.lock
+*.log
