@@ -2,7 +2,7 @@
 
 These are ReasonML/Bucklescript bindings for [Numeral.js](http://numeraljs.com/).
 
-![BS-Numeral code screenshot](/screenshot.svg)
+![BS-Numeral code screenshot](/screenshot.png)
 
 ## Why use *this* BS-Numeral?
 
