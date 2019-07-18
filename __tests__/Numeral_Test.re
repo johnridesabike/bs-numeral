@@ -1,18 +1,18 @@
 open Jest;
 open Expect;
 open Numeral;
-
 /*
-   Takes a list of tuples of (result, expectedResult) and reduces them into a
-   a tuple of two lists for easy comparison.
+   This is based on the actual test that Numeral uses. It's heavily trimmed. We
+   are only interested in ensuring that the methods are bound correctly, not
+   necessarily with their output.
  */
 
 describe("Numeral", () => {
   afterEach(() => numeral->reset);
 
   test("It should set a default format", () => {
-    numeral->defaultFormat("0,0");
-    expect(make(10000.0)->format()) |> toEqual("10,000");
+    setDefaultFormat("0,0");
+    expect(make(10000.0)->formatDefault) |> toEqual("10,000");
   });
 
   test("It should return a value", () =>
@@ -71,9 +71,9 @@ describe("Numeral", () => {
         tests->Belt.List.reduce(
           ([], []),
           ((y, z), (inputvalue, formatstr, str, expectedResult)) => {
-            numeral->zeroFormat(formatstr);
+            zeroFormat(formatstr);
             (
-              [make(inputvalue)->format(~format=str, ()), ...y],
+              [make(inputvalue)->format(str), ...y],
               [expectedResult, ...z],
             );
           },
@@ -99,8 +99,8 @@ describe("Numeral", () => {
   describe("Format", () =>
     test("It should format to a number", () =>
       expect((
-        make(0.0)->format(~format="0.00", ()),
-        make(Js.Float._NaN)->format(~format="0.0", ()),
+        make(0.0)->format("0.00"),
+        make(Js.Float._NaN)->format("0.0"),
       ))
       |> toEqual(("0.00", "0.0"))
     )
@@ -111,7 +111,7 @@ describe("Numeral", () => {
        This one doesn't do anything, I think.
      */
     test("It should unformat a number", () => {
-      numeral->zeroFormat("N/A");
+      zeroFormat("N/A");
       let result = make(0.0)->value;
       numeral->reset;
       expect(result) |> toEqual(0.0);
@@ -120,7 +120,7 @@ describe("Numeral", () => {
        Unformat is only used for strings.
      */
     test("It should unformat a number (String)", () => {
-      numeral->zeroFormat("N/A");
+      zeroFormat("N/A");
       expect((
         String.make("1.23t")->String.value,
         String.make("N/A")->String.value,
@@ -180,30 +180,19 @@ describe("Numeral", () => {
     test("It should format with rounding", () => {
       let num = make(2280002.0);
       expect((
-        num->format(~format="0.00a", ~roundingFunction=floor, ()),
-        num->format(~format="0.00a", ~roundingFunction=ceil, ()),
+        num->formatRound("0.00a", floor),
+        num->formatRound("0.00a", ceil),
       ))
       |> toEqual(("2.28m", "2.29m"));
     })
   );
-  /*
-   I'm not gonna bind the utility functions for now.
-   describe("Utilities", () =>  {
-       describe("Insert", () =>  {
-           test("It should insert into string", () =>  {
-               var tests = [
-                       ["1000", "+", 0, "+1000"],
-                       ["1000", "-", 4, "1000-"]
-                   ],
-                   i;
-
-               for (i = 0; i < tests.length; i++) {
-                   expect(numeral._.insert(tests[i][0], tests[i][1], tests[i][2])).toEqual(tests[i][3]);
-               }
-
-           });
-       });
-   }); */
+  describe("Utilities", () =>
+    describe("Insert", () =>
+      test("It should insert into string", () =>
+        expect(Helpers.insert("1000", "+", 0)) |> toEqual("+1000")
+      )
+    )
+  );
   test("Can register a custom format", () => {
     let _ =
       registerFormat(
@@ -213,16 +202,10 @@ describe("Numeral", () => {
             "format": Js.Re.fromString("(test)"),
             "unformat": Js.Re.fromString("(test)"),
           },
-          "format":
-            (
-              ~value: float,
-              ~format: string,
-              ~roundingFunction: roundingFunction,
-              (),
-            ) => {
+          "format": (value, format, roundingFunction) => {
             let space = Helpers.includes(format, " %") ? " " : "";
             let value = value *. 100.0;
-            // check for space before %
+            /* check for space before % */
             let format2 =
               format
               |> Js.String.replaceByRe(Js.Re.fromString("/\s?\%/"), "");
@@ -241,11 +224,21 @@ describe("Numeral", () => {
               output ++ space ++ "%";
             };
           },
-          "unformat": (~value: string) => {
+          "unformat": value => {
             Helpers.stringToNumber(value) *. 0.01;
           },
         },
       );
-    expect(make(0.0)->format(~format="test", ())) |> toBe("0%");
+    expect(make(0.42)->format("test")) |> toBe("42%");
+  });
+  test("The example works", () => {
+    let initialProgress = 0.42;
+    let growth = "165%"->Numeral.String.make->Numeral.String.value;
+    let output =
+      initialProgress
+      ->Numeral.make
+      ->Numeral.multiply(growth)
+      ->Numeral.format("%");
+    expect(output) |> toBe("69%");
   });
 });
