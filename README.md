@@ -19,10 +19,10 @@ Notable differences between this and vanilla Numeral.js:
 - The `Numeral` module only accepts floats. This is because once a number gets passed to the JavaScript side, it essentially becomes a float anyway. `Numeral` always returns values as floats.
 - To use a string as input, use `Numeral.String`. The bindings for that module are almost the same as the base module, except that it accepts strings and returns `option`s. By keeping the two modules separate, we don't have to deal with `option` cases every time we use the module.
 - BS-Numeral cannot recieve `Null` as input.
-- Some functions are not bound because they're mostly irrelevant in ReasonML, such as `isNumeral`.
+- Some functions are not bound because they're irrelevant in ReasonML, such as `isNumeral`.
 - Some functions that can take several optional inputs are split into multiple functions. For example: `numeral.format` has been turned into `Numeral.defaultFormat`, `Numeral.format`, and `Numeral.formatRound`.
 - The math functions, `add`, `subtract`, etc., can take any type as input.
-- The helper functions (`numeral._`) are available in `Numeral.Helpers`. They are not documented or tested by vanilla Numeral.js, so their bindings here are not well tested either. Some of them are mostly irrelevant in ReasonML anyway.
+- The helper functions (`numeral._`) are available in `Numeral.Helpers`. They are not documented or tested by vanilla Numeral.js, so their bindings here are not well tested either. Some of them are irrelevant in ReasonML anyway.
 
 # Build
 ```

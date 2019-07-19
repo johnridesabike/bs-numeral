@@ -10,7 +10,7 @@
   },
   "keywords": [],
   "author": "John Jackson",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "numeral": "^2.0.6"
   }, 
