@@ -15,6 +15,10 @@
   ],
   "author": "John Jackson",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/johnridesabike/bs-numeral.git"
+  },
   "dependencies": {
     "numeral": "^2.0.6"
   },
