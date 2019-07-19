@@ -22,7 +22,7 @@ And then add the project to the `bs-dependencies` array in your `bsconfig.json` 
 
 There are a few other Numeral.js bindings, and it's easy to write an simple binding yourself if you only use a few of its functions. This aims to be a complete implemenation, however. To help ensure accuracy, it uses (mostly) the same tests as vanilla Numeral.js. The goal of this project is to provide a hassle-free replacement for people used to using Numeral.js in their JavaScript.
 
-## 📝 ocumentation
+## 📝 Documentation
 
 As with most ReasonML bindings, the interface files are mostly self-documenting. [You can view this project's interface here](/src/Numeral.rei).
 
