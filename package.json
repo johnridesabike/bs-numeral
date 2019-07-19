@@ -1,19 +1,23 @@
 {
-  "name": "bs-numeral",
+  "name": "@johnridesabike/bs-numeral",
   "version": "1.0.0",
   "description": "Bucklescript bindings for Numeral.js",
-
   "scripts": {
     "bs:build": "bsb -make-world",
     "bs:clean": "bsb -clean-world",
     "test": "jest --watch"
   },
-  "keywords": [],
+  "keywords": [
+    "reason",
+    "reasonml",
+    "bucklescript",
+    "numeral"
+  ],
   "author": "John Jackson",
   "license": "MIT",
   "dependencies": {
     "numeral": "^2.0.6"
-  }, 
+  },
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.8",
     "bs-platform": "^5.0.6"
