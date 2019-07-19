@@ -48,7 +48,7 @@ type numeral = {
   version: string,
   options: numeralJsOptions,
 };
-[@bs.module] external numeral: numeral = "numeral";
+[@bs.module "numeral"] external numeral: numeral = "default";
 [@bs.send] external reset: numeral => unit = "reset";
 [@bs.send]
 external registerLocale_:
@@ -84,8 +84,8 @@ let validate = (a, b) => numeral->validate_(a, b);
   Numeral instances
  ******************************************************************************/
 type t;
-[@bs.module] external make: float => t = "numeral";
-[@bs.module] external fromNumeral: t => t = "numeral";
+[@bs.module "numeral"] external make: float => t = "default";
+[@bs.module "numeral"] external fromNumeral: t => t = "default";
 [@bs.send] external clone: t => t = "clone";
 [@bs.send] external formatDefault: t => string = "format";
 [@bs.send] external format: (t, string) => string = "format";
@@ -114,7 +114,7 @@ module String = {
     version: string,
     options: numeralJsOptions,
   };
-  [@bs.module] external numeral: numeral = "numeral";
+  [@bs.module "numeral"] external numeral: numeral = "default";
   [@bs.send] external reset: numeral => unit = "reset";
   [@bs.send]
   external registerLocale_:
@@ -146,8 +146,8 @@ module String = {
     Numeral instances
    ****************************************************************************/
   type t;
-  [@bs.module] external make: string => t = "numeral";
-  [@bs.module] external fromNumeral: t => t = "numeral";
+  [@bs.module "numeral"] external make: string => t = "default";
+  [@bs.module "numeral"] external fromNumeral: t => t = "default";
   [@bs.send] external clone: t => t = "clone";
   [@bs.send] external formatDefault: t => string = "format";
   [@bs.send] external format: (t, string) => string = "format";
@@ -232,3 +232,14 @@ module Helpers = {
     ->getHelpers
     ->getToFixed(value, maxDecimals, roundingFunction, optionals);
 };
+
+/*
+  This is a hack to make sure that it works on Babel ES6 and commonJs.
+  This probably isn't safe or stable.
+*/
+[%raw{|function () {
+  if (Numeral.default === undefined) {
+    Numeral.default = Numeral;
+  }
+}()
+|}];

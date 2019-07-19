@@ -18,7 +18,7 @@ let version: numeral => string;
 let versionGet: numeral => string;
 let options: numeral => numeralJsOptions;
 let optionsGet: numeral => numeralJsOptions;
-[@bs.module] external numeral: numeral = "numeral";
+[@bs.module "numeral"] external numeral: numeral = "default";
 [@bs.send] external reset: numeral => unit = "reset";
 [@bs.send] external registerLocale_:
   (numeral, ~what: string, ~key: string, ~value: numeralJsLocale) =>
@@ -41,8 +41,8 @@ let setDefaultFormat: string => unit;
 [@bs.send] external validate_: (numeral, 'a, 'b) => bool = "validate";
 let validate: ('a, 'b) => bool;
 type t;
-[@bs.module] external make: float => t = "numeral";
-[@bs.module] external fromNumeral: t => t = "numeral";
+[@bs.module "numeral"] external make: float => t = "default";
+[@bs.module "numeral"] external fromNumeral: t => t = "default";
 [@bs.send] external clone: t => t = "clone";
 [@bs.send] external formatDefault: t => string = "format";
 [@bs.send] external format: (t, string) => string = "format";
@@ -63,7 +63,7 @@ module String:
     let versionGet: numeral => string;
     let options: numeral => numeralJsOptions;
     let optionsGet: numeral => numeralJsOptions;
-    [@bs.module] external numeral: numeral = "numeral";
+    [@bs.module "numeral"] external numeral: numeral = "default";
     [@bs.send] external reset: numeral => unit = "reset";
     [@bs.send] external registerLocale_:
       (numeral, ~what: string, ~key: string, ~value: numeralJsLocale) =>
@@ -86,8 +86,8 @@ module String:
     [@bs.send] external validate_: (numeral, 'a, 'b) => bool = "validate";
     let validate: ('a, 'b) => bool;
     type t;
-    [@bs.module] external make: string => t = "numeral";
-    [@bs.module] external fromNumeral: t => t = "numeral";
+    [@bs.module "numeral"] external make: string => t = "default";
+    [@bs.module "numeral"] external fromNumeral: t => t = "default";
     [@bs.send] external clone: t => t = "clone";
     [@bs.send] external formatDefault: t => string = "format";
     [@bs.send] external format: (t, string) => string = "format";
