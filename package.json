@@ -1,6 +1,6 @@
 {
   "name": "@johnridesabike/bs-numeral",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Bucklescript bindings for Numeral.js",
   "scripts": {
     "bs:build": "bsb -make-world",
