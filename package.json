@@ -3,8 +3,9 @@
   "version": "1.0.5",
   "description": "Bucklescript bindings for Numeral.js",
   "scripts": {
-    "bs:build": "bsb -make-world",
-    "bs:clean": "bsb -clean-world",
+    "build": "bsb -make-world",
+    "watch": "bsb -w",
+    "clean": "bsb -clean-world",
     "test": "jest --watch"
   },
   "keywords": [
