@@ -1,14 +1,11 @@
 open Jest;
 open Expect;
 open Numeral;
-/*
-   This is based on the actual test that Numeral uses. It's heavily trimmed. We
+/* This is based on the actual test that Numeral uses. It's heavily trimmed. We
    are only interested in ensuring that the methods are bound correctly, not
-   necessarily with their output.
- */
-
+   necessarily with their output.*/
 describe("Numeral", () => {
-  afterEach(() => numeral->reset);
+  afterEach(() => reset(numeral));
 
   test("It should set a default format", () => {
     setDefaultFormat("0,0");
@@ -68,7 +65,8 @@ describe("Numeral", () => {
     test("It should change zero value", () => {
       let tests = [(0.0, "N/A", "0", "N/A"), (0.0, "", "", "")];
       let (results, expectedResults) =
-        tests->Belt.List.reduce(
+        Belt.List.reduce(
+          tests,
           ([], []),
           ((y, z), (inputvalue, formatstr, str, expectedResult)) => {
             zeroFormat(formatstr);
@@ -85,10 +83,10 @@ describe("Numeral", () => {
     test("It should clone", () => {
       let a = make(1000.0);
       let b = fromNumeral(a);
-      let c = a->clone;
-      let aVal = a->value;
+      let c = clone(a);
+      let aVal = value(a);
       let aSet = a->set(2000.0)->value;
-      let bVal = b->value;
+      let bVal = value(b);
       let cVal = c->add(10.0)->value;
 
       expect((aVal, aSet, bVal, cVal))
@@ -113,7 +111,7 @@ describe("Numeral", () => {
     test("It should unformat a number", () => {
       zeroFormat("N/A");
       let result = make(0.0)->value;
-      numeral->reset;
+      reset(numeral);
       expect(result) |> toEqual(0.0);
     });
     /*
@@ -128,7 +126,6 @@ describe("Numeral", () => {
       ))
       |> toEqual((Some(1230000000000.0), Some(0.0), None));
     });
-    numeral->reset;
   });
 
   describe("Validate", () => {
@@ -157,31 +154,31 @@ describe("Numeral", () => {
   );
   describe("Subtract", () =>
     test("It should subtract", () =>
-      expect(make(1000.0)->subtract(10)->value) |> toEqual(990.0)
+      expect(make(1000.0)->subtract(10.)->value) |> toEqual(990.0)
     )
   );
   describe("Multiply", () =>
     test("It should multiply", () =>
-      expect(make(1000.0)->multiply(10)->value) |> toEqual(10000.0)
+      expect(make(1000.0)->multiply(10.)->value) |> toEqual(10000.0)
     )
   );
   describe("Divide", () =>
     test("It should divide", () =>
-      expect(make(1000.0)->divide(10)->value) |> toEqual(100.0)
+      expect(make(1000.0)->divide(10.)->value) |> toEqual(100.0)
     )
   );
 
   describe("Difference", () =>
     test("It should find a difference", () =>
-      expect(make(1000.0)->difference(10)) |> toEqual(990.0)
+      expect(make(1000.0)->difference(10.)) |> toEqual(990.0)
     )
   );
   describe("Rounding", () =>
     test("It should format with rounding", () => {
       let num = make(2280002.0);
       expect((
-        num->formatRound("0.00a", floor),
-        num->formatRound("0.00a", ceil),
+        formatRound(num, "0.00a", floor),
+        formatRound(num, "0.00a", ceil),
       ))
       |> toEqual(("2.28m", "2.29m"));
     })
@@ -194,28 +191,28 @@ describe("Numeral", () => {
     )
   );
   test("Can register a custom format", () => {
-    let _ =
-      registerFormat(
-        "percentage2",
-        {
-          "regexps": {
-            "format": Js.Re.fromString("(test)"),
-            "unformat": Js.Re.fromString("(test)"),
-          },
-          "format": (value, format, roundingFunction) => {
+    registerFormat(
+      "percentage2",
+      makeFormat(
+        ~regexps=
+          makeRegExps(
+            ~format=[%bs.re "/(test)/"],
+            ~unformat=[%bs.re "/(test)/"],
+          ),
+        ~formatFn=
+          (value, format, roundingFunction) => {
             let space = Helpers.includes(format, " %") ? " " : "";
             let value = value *. 100.0;
             /* check for space before % */
             let format2 =
-              format
-              |> Js.String.replaceByRe(Js.Re.fromString("/\s?\%/"), "");
+              format |> Js.String.replaceByRe([%bs.re "/\\s?\\%/"], "");
             let output =
               Helpers.numberToFormat(
                 ~value,
                 ~format=format2,
                 ~roundingFunction,
               );
-            if (output->Helpers.includes(")")) {
+            if (Helpers.includes(output, ")")) {
               output
               |> Js.String.split("")
               |> Js.Array.concat([|space ++ "%"|])
@@ -224,16 +221,16 @@ describe("Numeral", () => {
               output ++ space ++ "%";
             };
           },
-          "unformat": value => {
-            Helpers.stringToNumber(value) *. 0.01;
-          },
-        },
-      );
+        ~unformatFn=value => Helpers.stringToNumber(value) *. 0.01,
+      ),
+    )
+    |> ignore;
     expect(make(0.42)->format("test")) |> toBe("42%");
   });
   test("The example works", () => {
     let initialProgress = 0.42;
-    let growth = "165%"->Numeral.String.make->Numeral.String.value;
+    let growth =
+      "165%"->Numeral.String.make->Numeral.String.value->Belt.Option.getExn;
     let output =
       initialProgress
       ->Numeral.make

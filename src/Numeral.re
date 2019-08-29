@@ -1,182 +1,149 @@
 /*******************************************************************************
   Helper types
  ******************************************************************************/
-type numeralJsOptions = {
-  .
-  "currentLocale": string,
-  "zeroFormat": string,
-  "nullFormat": string,
-  "defaultFormat": string,
-  "scalePercentBy100": bool,
+[@bs.deriving abstract]
+type makeOptions = {
+  currentLocale: string,
+  zeroFormat: string,
+  nullFormat: string,
+  defaultFormat: string,
+  scalePercentBy100: bool,
 };
-
-type numeralJsLocale = {
-  .
-  "delimiters": {
-    .
-    "thousands": string,
-    "decimal": string,
-  },
-  "abbreviations": {
-    .
-    "thousand": string,
-    "million": string,
-    "billion": string,
-    "trillion": string,
-  },
-  "ordinal": float => string,
-  "currency": {. "symbol": string},
+[@bs.deriving abstract]
+type delimitersConfig = {
+  thousands: string,
+  decimal: string,
 };
-type roundingFunction = float => float;
-
-type numeralJsFormat = {
-  .
-  "regexps": {
-    .
-    "format": Js.Re.t,
-    "unformat": Js.Re.t,
-  },
-  "format": (float, string, roundingFunction) => string,
-  "unformat": string => float,
+[@bs.deriving abstract]
+type abbreviationsConfig = {
+  thousand: string,
+  million: string,
+  billion: string,
+  trillion: string,
 };
-
-/*******************************************************************************
-  The base numeral object
- ******************************************************************************/
+[@bs.deriving abstract]
+type currencyConfig = {symbol: string};
+[@bs.deriving abstract]
+type makeLocale = {
+  delimiters: delimitersConfig,
+  abbreviations: abbreviationsConfig,
+  ordinal: float => string,
+  currency: currencyConfig,
+};
+[@bs.deriving abstract]
+type makeRegExps = {
+  format: Js.Re.t,
+  unformat: Js.Re.t,
+};
+[@bs.deriving abstract]
+type makeFormat = {
+  regexps: makeRegExps,
+  [@bs.as "format"]
+  formatFn: (float, string, float => float) => string,
+  [@bs.as "unformat"]
+  unformatFn: string => float,
+};
 [@bs.deriving abstract]
 type numeral = {
   version: string,
-  options: numeralJsOptions,
+  options: makeOptions,
 };
-[@bs.module "numeral"] external numeral: numeral = "default";
-[@bs.send] external reset: numeral => unit = "reset";
-[@bs.send]
-external registerLocale_:
-  (numeral, ~what: string, ~key: string, ~value: numeralJsLocale) =>
-  numeralJsLocale =
-  "register";
-let registerLocale = (key, value) =>
-  numeral->registerLocale_(~what="locale", ~key, ~value);
-[@bs.send]
-external registerFormat_:
-  (numeral, ~what: string, ~key: string, ~value: numeralJsFormat) =>
-  numeralJsFormat =
-  "register";
-
-let registerFormat = (key, value) =>
-  numeral->registerFormat_(~what="format", ~key, ~value);
-[@bs.send] external locale_: (numeral, ~key: string=?) => string = "locale";
-let locale = (~key) => numeral->locale_(~key);
-[@bs.send]
-external localeData_: (numeral, ~key: string=?) => numeralJsLocale =
-  "localeData";
-let localeData = (~key) => numeral->localeData_(~key);
-[@bs.send] external zeroFormat_: (numeral, string) => unit = "zeroFormat";
-let zeroFormat = str => numeral->zeroFormat_(str);
-/* [@bs.send] external nullFormat: (t, string) => unit = "nullFormat"; */
-[@bs.send]
-external setDefaultFormat_: (numeral, string) => unit = "defaultFormat";
-let setDefaultFormat = str => numeral->setDefaultFormat_(str);
-[@bs.send] external validate_: (numeral, 'a, 'b) => bool = "validate";
-let validate = (a, b) => numeral->validate_(a, b);
-
 /*******************************************************************************
-  Numeral instances
+  The use this to create Numeral objects that return different types.
  ******************************************************************************/
-type t;
-[@bs.module "numeral"] external make: float => t = "default";
-[@bs.module "numeral"] external fromNumeral: t => t = "default";
-[@bs.send] external clone: t => t = "clone";
-[@bs.send] external formatDefault: t => string = "format";
-[@bs.send] external format: (t, string) => string = "format";
-[@bs.send]
-external formatRound: (t, string, roundingFunction) => string = "format";
-[@bs.send] external unformat: (t, string) => float = "unformat";
-[@bs.send] external value: t => float = "value";
-/* [@bs.send] external valueOf: t => float = "valueOf"; */
-[@bs.send] external set: (t, float) => t = "set";
-[@bs.send] external add: (t, 'a) => t = "add";
-[@bs.send] external subtract: (t, 'a) => t = "subtract";
-[@bs.send] external multiply: (t, 'a) => t = "multiply";
-[@bs.send] external divide: (t, 'a) => t = "divide";
-[@bs.send] external difference: (t, 'a) => float = "difference";
-
-/*
-   This is the same as the regular type except that it takes strings instead of
-   floats and it returns options.
- */
-module String = {
-  /*****************************************************************************
-    The base numeral object
-   ****************************************************************************/
-  [@bs.deriving abstract]
-  type numeral = {
-    version: string,
-    options: numeralJsOptions,
-  };
+module Make =
+       (
+         M: {
+           type input;
+           type output;
+           type parsedOutput;
+           let parseOutput: output => parsedOutput;
+         },
+       ) => {
   [@bs.module "numeral"] external numeral: numeral = "default";
   [@bs.send] external reset: numeral => unit = "reset";
   [@bs.send]
   external registerLocale_:
-    (numeral, ~what: string, ~key: string, ~value: numeralJsLocale) =>
-    numeralJsLocale =
+    (numeral, ~what: string, ~key: string, ~value: makeLocale) =>
+    makeLocale =
     "register";
-  let registerLocale = (~key, ~value) =>
+  let registerLocale = (key, value) =>
     numeral->registerLocale_(~what="locale", ~key, ~value);
   [@bs.send]
   external registerFormat_:
-    (numeral, ~what: string, ~key: string, ~value: numeralJsFormat) =>
-    numeralJsFormat =
+    (numeral, ~what: string, ~key: string, ~value: makeFormat) =>
+    makeFormat =
     "register";
-  let registerFormat = (~key, ~value) =>
+
+  let registerFormat = (key, value) =>
     numeral->registerFormat_(~what="format", ~key, ~value);
   [@bs.send] external locale_: (numeral, ~key: string=?) => string = "locale";
   let locale = (~key) => numeral->locale_(~key);
   [@bs.send]
-  external localeData_: (numeral, ~key: string=?) => numeralJsLocale =
+  external localeData_: (numeral, ~key: string=?) => makeLocale =
     "localeData";
   let localeData = (~key) => numeral->localeData_(~key);
-  [@bs.send] external zeroFormat: (numeral, string) => unit = "zeroFormat";
-  /* [@bs.send] external nullFormat: (numeral, string) => unit = "nullFormat"; */
+  [@bs.send] external zeroFormat_: (numeral, string) => unit = "zeroFormat";
+  let zeroFormat = str => numeral->zeroFormat_(str);
+  /* [@bs.send] external nullFormat: (t, string) => unit = "nullFormat"; */
   [@bs.send]
-  external setDefaultFormat: (numeral, string) => unit = "defaultFormat";
+  external setDefaultFormat_: (numeral, string) => unit = "defaultFormat";
+  let setDefaultFormat = str => numeral->setDefaultFormat_(str);
   [@bs.send] external validate_: (numeral, 'a, 'b) => bool = "validate";
   let validate = (a, b) => numeral->validate_(a, b);
+
   /*****************************************************************************
     Numeral instances
    ****************************************************************************/
   type t;
-  [@bs.module "numeral"] external make: string => t = "default";
+  [@bs.module "numeral"] external make: M.input => t = "default";
   [@bs.module "numeral"] external fromNumeral: t => t = "default";
   [@bs.send] external clone: t => t = "clone";
   [@bs.send] external formatDefault: t => string = "format";
   [@bs.send] external format: (t, string) => string = "format";
   [@bs.send]
-  external formatRound: (t, string, roundingFunction) => string = "format";
-  [@bs.send] external unformat: (t, string) => float = "unformat";
-  [@bs.send] external value_: t => Js.Nullable.t(float) = "value";
-  let value = t => t->value_->Js.Nullable.toOption;
-  /* [@bs.send] external valueOf_: t => Js.Nullable.t(float) = "valueOf";
-     let valueOf = t => t->valueOf_->Js.Nullable.toOption; */
-  [@bs.send] external set: (t, string) => t = "set";
-  [@bs.send] external add: (t, 'a) => t = "add";
-  [@bs.send] external subtract: (t, 'a) => t = "subtract";
-  [@bs.send] external multiply: (t, 'a) => t = "multiply";
-  [@bs.send] external divide: (t, 'a) => t = "divide";
-  [@bs.send]
-  external difference_: (t, 'a) => Js.Nullable.t(float) = "difference";
-  let difference = (t, value) => t->difference_(value)->Js.Nullable.toOption;
+  external formatRound: (t, string, float => float) => string = "format";
+  [@bs.send] external unformat_: (t, string) => M.output = "unformat";
+  let unformat = (t, value) => t->unformat_(value)->M.parseOutput;
+  [@bs.send] external value_: t => M.output = "value";
+  let value = t => t->value_->M.parseOutput;
+  /* [@bs.send] external valueOf: t => float = "valueOf"; */
+  [@bs.send] external set: (t, M.input) => t = "set";
+  [@bs.send] external add: (t, M.input) => t = "add";
+  [@bs.send] external subtract: (t, M.input) => t = "subtract";
+  [@bs.send] external multiply: (t, M.input) => t = "multiply";
+  [@bs.send] external divide: (t, M.input) => t = "divide";
+  [@bs.send] external difference_: (t, M.input) => M.output = "difference";
+  let difference = (t, value) => t->difference_(value)->M.parseOutput;
 };
-
-/*
-   These bindings aren't well tested or documented. Use with caution.
-   Pull requests and bug reports are welcome!
- */
+/*******************************************************************************
+  The base numeral object
+ ******************************************************************************/
+module Float =
+  Make({
+    type input = float;
+    type output = float;
+    type parsedOutput = float;
+    let parseOutput = output => output;
+  });
+/* `Float` is the default, initially opened, module */
+include Float;
+module String =
+  Make({
+    type input = string;
+    type output = Js.Nullable.t(float);
+    type parsedOutput = option(float);
+    let parseOutput = Js.Nullable.toOption;
+  });
+/* It probably doesn't make sense to add other types, like `int`, because the
+  we can't guarantee that it will stay an int once it goes to the JS side. */
 module Helpers = {
+/* These bindings aren't well tested or documented. Use with caution.
+   Pull requests and bug reports are welcome! */
   type t;
   [@bs.get] external getHelpers: numeral => t = "_";
 
-  type numberToFormat = (float, string, roundingFunction) => string;
+  type numberToFormat = (float, string, float => float) => string;
   [@bs.get] external getNumberToFormat: t => numberToFormat = "numberToFormat";
   let numberToFormat = (~value, ~format, ~roundingFunction) =>
     numeral->getHelpers->getNumberToFormat(value, format, roundingFunction);
@@ -225,7 +192,7 @@ module Helpers = {
   let correctionFactor5 = (arg1, arg2, arg3, arg4, arg5) =>
     numeral->getHelpers->getCorrectionFactor5(arg1, arg2, arg3, arg4, arg5);
 
-  type toFixed = (float, int, roundingFunction, int) => float;
+  type toFixed = (float, int, float => float, int) => float;
   [@bs.get] external getToFixed: t => toFixed = "toFixed";
   let toFixed = (value, maxDecimals, roundingFunction, optionals) =>
     numeral
@@ -233,13 +200,9 @@ module Helpers = {
     ->getToFixed(value, maxDecimals, roundingFunction, optionals);
 };
 
-/*
-  This is a hack to make sure that it works on Babel ES6 and commonJs.
-  This probably isn't safe or stable.
-*/
-[%raw{|function () {
-  if (Numeral.default === undefined) {
-    Numeral.default = Numeral;
-  }
-}()
-|}];
+/* This is a hack to make sure that it works on Babel ES6 and commonJs.
+   This probably isn't safe or stable.*/
+%raw
+{|if (Numeral.default === undefined) {
+  Numeral.default = Numeral;
+}|};

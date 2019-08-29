@@ -1,89 +1,86 @@
-type numeralJsOptions =
-    {. "currentLocale": string, "defaultFormat": string,
-      "nullFormat": string, "scalePercentBy100": bool, "zeroFormat": 
-      string};
-type numeralJsLocale =
-    {. "abbreviations": {. "billion": string, "million": string,
-                          "thousand": string, "trillion": string},
-      "currency": {. "symbol": string},
-      "delimiters": {. "decimal": string, "thousands": string},
-      "ordinal": float => string};
-type roundingFunction = float => float;
-type numeralJsFormat =
-    {. "format": (float, string, roundingFunction) => string,
-      "regexps": {. "format": Js.Re.t, "unformat": Js.Re.t},
-      "unformat": string => float};
-type numeral;
-let version: numeral => string;
-let versionGet: numeral => string;
-let options: numeral => numeralJsOptions;
-let optionsGet: numeral => numeralJsOptions;
+[@bs.deriving abstract]
+type makeOptions = {
+  currentLocale: string,
+  zeroFormat: string,
+  nullFormat: string,
+  defaultFormat: string,
+  scalePercentBy100: bool,
+};
+
+[@bs.deriving abstract]
+type delimitersConfig = {
+  thousands: string,
+  decimal: string,
+};
+[@bs.deriving abstract]
+type abbreviationsConfig = {
+  thousand: string,
+  million: string,
+  billion: string,
+  trillion: string,
+};
+[@bs.deriving abstract]
+type currencyConfig = {symbol: string};
+[@bs.deriving abstract]
+type makeLocale = {
+  delimiters: delimitersConfig,
+  abbreviations: abbreviationsConfig,
+  ordinal: float => string,
+  currency: currencyConfig,
+};
+[@bs.deriving abstract]
+type makeRegExps = {
+  format: Js.Re.t,
+  unformat: Js.Re.t,
+};
+[@bs.deriving abstract]
+type makeFormat = {
+  regexps: makeRegExps,
+  [@bs.as "format"]
+  formatFn: (float, string, float => float) => string,
+  [@bs.as "unformat"]
+  unformatFn: string => float,
+};
+[@bs.deriving abstract]
+type numeral = {
+  version: string,
+  options: makeOptions,
+};
 [@bs.module "numeral"] external numeral: numeral = "default";
 [@bs.send] external reset: numeral => unit = "reset";
-[@bs.send] external registerLocale_:
-  (numeral, ~what: string, ~key: string, ~value: numeralJsLocale) =>
-  numeralJsLocale = "register";
-let registerLocale: (string, numeralJsLocale) => numeralJsLocale;
-[@bs.send] external registerFormat_:
-  (numeral, ~what: string, ~key: string, ~value: numeralJsFormat) =>
-  numeralJsFormat = "register";
-let registerFormat: (string, numeralJsFormat) => numeralJsFormat;
-[@bs.send] external locale_: (numeral, ~key: string=?) => string = "locale";
+let registerLocale: (string, makeLocale) => makeLocale;
+let registerFormat: (string, makeFormat) => makeFormat;
 let locale: (~key: string) => string;
-[@bs.send] external localeData_: (numeral, ~key: string=?) => numeralJsLocale
-  = "localeData";
-let localeData: (~key: string) => numeralJsLocale;
-[@bs.send] external zeroFormat_: (numeral, string) => unit = "zeroFormat";
+let localeData: (~key: string) => makeLocale;
 let zeroFormat: string => unit;
-[@bs.send] external setDefaultFormat_: (numeral, string) => unit
-  = "defaultFormat";
 let setDefaultFormat: string => unit;
-[@bs.send] external validate_: (numeral, 'a, 'b) => bool = "validate";
 let validate: ('a, 'b) => bool;
 type t;
 [@bs.module "numeral"] external make: float => t = "default";
-[@bs.module "numeral"] external fromNumeral: t => t = "default";
+[@bs.module "numeral"]  external fromNumeral: t => t = "default";
 [@bs.send] external clone: t => t = "clone";
 [@bs.send] external formatDefault: t => string = "format";
 [@bs.send] external format: (t, string) => string = "format";
-[@bs.send] external formatRound: (t, string, roundingFunction) => string
+[@bs.send] external formatRound: (t, string, float => float) => string
   = "format";
-[@bs.send] external unformat: (t, string) => float = "unformat";
-[@bs.send] external value: t => float = "value";
+let unformat: (t, string) => float;
+let value: t => float;
 [@bs.send] external set: (t, float) => t = "set";
-[@bs.send] external add: (t, 'a) => t = "add";
-[@bs.send] external subtract: (t, 'a) => t = "subtract";
-[@bs.send] external multiply: (t, 'a) => t = "multiply";
-[@bs.send] external divide: (t, 'a) => t = "divide";
-[@bs.send] external difference: (t, 'a) => float = "difference";
+[@bs.send] external add: (t, float) => t = "add";
+[@bs.send] external subtract: (t, float) => t = "subtract";
+[@bs.send] external multiply: (t, float) => t = "multiply";
+[@bs.send] external divide: (t, float) => t = "divide";
+let difference: (t, float) => float;
 module String:
   {
-    type numeral;
-    let version: numeral => string;
-    let versionGet: numeral => string;
-    let options: numeral => numeralJsOptions;
-    let optionsGet: numeral => numeralJsOptions;
     [@bs.module "numeral"] external numeral: numeral = "default";
     [@bs.send] external reset: numeral => unit = "reset";
-    [@bs.send] external registerLocale_:
-      (numeral, ~what: string, ~key: string, ~value: numeralJsLocale) =>
-      numeralJsLocale = "register";
-    let registerLocale:
-      (~key: string, ~value: numeralJsLocale) => numeralJsLocale;
-    [@bs.send] external registerFormat_:
-      (numeral, ~what: string, ~key: string, ~value: numeralJsFormat) =>
-      numeralJsFormat = "register";
-    let registerFormat:
-      (~key: string, ~value: numeralJsFormat) => numeralJsFormat;
-    [@bs.send] external locale_: (numeral, ~key: string=?) => string = "locale";
+    let registerLocale: (string, makeLocale) => makeLocale;
+    let registerFormat: (string, makeFormat) => makeFormat;
     let locale: (~key: string) => string;
-    [@bs.send] external localeData_:
-      (numeral, ~key: string=?) => numeralJsLocale = "localeData";
-    let localeData: (~key: string) => numeralJsLocale;
-    [@bs.send] external zeroFormat: (numeral, string) => unit = "zeroFormat";
-    [@bs.send] external setDefaultFormat: (numeral, string) => unit
-      = "defaultFormat";
-    [@bs.send] external validate_: (numeral, 'a, 'b) => bool = "validate";
+    let localeData: (~key: string) => makeLocale;
+    let zeroFormat: string => unit;
+    let setDefaultFormat: string => unit;
     let validate: ('a, 'b) => bool;
     type t;
     [@bs.module "numeral"] external make: string => t = "default";
@@ -91,30 +88,27 @@ module String:
     [@bs.send] external clone: t => t = "clone";
     [@bs.send] external formatDefault: t => string = "format";
     [@bs.send] external format: (t, string) => string = "format";
-    [@bs.send] external formatRound: (t, string, roundingFunction) => string
+    [@bs.send] external formatRound: (t, string, float => float) => string
       = "format";
-    [@bs.send] external unformat: (t, string) => float = "unformat";
-    [@bs.send] external value_: t => Js.Nullable.t(float) = "value";
+    let unformat: (t, string) => option(float);
     let value: t => option(float);
     [@bs.send] external set: (t, string) => t = "set";
-    [@bs.send] external add: (t, 'a) => t = "add";
-    [@bs.send] external subtract: (t, 'a) => t = "subtract";
-    [@bs.send] external multiply: (t, 'a) => t = "multiply";
-    [@bs.send] external divide: (t, 'a) => t = "divide";
-    [@bs.send] external difference_: (t, 'a) => Js.Nullable.t(float)
-      = "difference";
-    let difference: (t, 'a) => option(float);
+    [@bs.send] external add: (t, string) => t = "add";
+    [@bs.send] external subtract: (t, string) => t = "subtract";
+    [@bs.send] external multiply: (t, string) => t = "multiply";
+    [@bs.send] external divide: (t, string) => t = "divide";
+    let difference: (t, string) => option(float);
   };
 module Helpers:
   {
     type t;
     [@bs.get] external getHelpers: numeral => t = "_";
-    type numberToFormat = (float, string, roundingFunction) => string;
+    type numberToFormat = (float, string, float => float) => string;
     [@bs.get] external getNumberToFormat: t => numberToFormat
       = "numberToFormat";
     let numberToFormat:
       (~value: float, ~format: string,
-      ~roundingFunction: roundingFunction) => string;
+      ~roundingFunction: float => float) => string;
     type stringToNumber = string => float;
     [@bs.get] external getStringToNumber: t => stringToNumber
       = "stringToNumber";
@@ -148,7 +142,7 @@ module Helpers:
     let correctionFactor3: (float, float, float) => float;
     let correctionFactor4: (float, float, float, float) => float;
     let correctionFactor5: (float, float, float, float, float) => float;
-    type toFixed = (float, int, roundingFunction, int) => float;
+    type toFixed = (float, int, float => float, int) => float;
     [@bs.get] external getToFixed: t => toFixed = "toFixed";
-    let toFixed: (float, int, roundingFunction, int) => float;
+    let toFixed: (float, int, float => float, int) => float;
   };
