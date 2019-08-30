@@ -63,20 +63,11 @@ describe("Numeral", () => {
 
   describe("Custom Zero", () =>
     test("It should change zero value", () => {
-      let tests = [(0.0, "N/A", "0", "N/A"), (0.0, "", "", "")];
-      let (results, expectedResults) =
-        Belt.List.reduce(
-          tests,
-          ([], []),
-          ((y, z), (inputvalue, formatstr, str, expectedResult)) => {
-            zeroFormat(formatstr);
-            (
-              [make(inputvalue)->format(str), ...y],
-              [expectedResult, ...z],
-            );
-          },
-        );
-      expect(results) |> toEqual(expectedResults);
+      setZeroFormat("N/A");
+      let a = make(0.0)->format("0");
+      setZeroFormat("");
+      let b = make(0.0)->format("");
+      expect((a, b)) |> toEqual(("N/A", ""));
     })
   );
   describe("Clone", () =>
@@ -88,7 +79,6 @@ describe("Numeral", () => {
       let aSet = a->set(2000.0)->value;
       let bVal = value(b);
       let cVal = c->add(10.0)->value;
-
       expect((aVal, aSet, bVal, cVal))
       |> toEqual((1000.0, 2000.0, 1000.0, 1010.0));
     })
@@ -105,20 +95,16 @@ describe("Numeral", () => {
   );
 
   describe("Unformat", () => {
-    /*
-       This one doesn't do anything, I think.
-     */
+    /* This one doesn't do anything, I think.*/
     test("It should unformat a number", () => {
-      zeroFormat("N/A");
+      setZeroFormat("N/A");
       let result = make(0.0)->value;
       reset(numeral);
       expect(result) |> toEqual(0.0);
     });
-    /*
-       Unformat is only used for strings.
-     */
+    /* Unformat is only used for strings. */
     test("It should unformat a number (String)", () => {
-      zeroFormat("N/A");
+      setZeroFormat("N/A");
       expect((
         String.make("1.23t")->String.value,
         String.make("N/A")->String.value,
@@ -230,7 +216,10 @@ describe("Numeral", () => {
   test("The example works", () => {
     let initialProgress = 0.42;
     let growth =
-      "165%"->Numeral.String.make->Numeral.String.value->Belt.Option.getExn;
+      "165%"
+      ->Numeral.String.make
+      ->Numeral.String.value
+      ->Belt.Option.getWithDefault(1.0);
     let output =
       initialProgress
       ->Numeral.make

@@ -10,25 +10,25 @@ type makeOptions = {
   scalePercentBy100: bool,
 };
 [@bs.deriving abstract]
-type delimitersConfig = {
+type makeDelimiters = {
   thousands: string,
   decimal: string,
 };
 [@bs.deriving abstract]
-type abbreviationsConfig = {
+type makeAbbreviations = {
   thousand: string,
   million: string,
   billion: string,
   trillion: string,
 };
 [@bs.deriving abstract]
-type currencyConfig = {symbol: string};
+type makeCurrency = {symbol: string};
 [@bs.deriving abstract]
 type makeLocale = {
-  delimiters: delimitersConfig,
-  abbreviations: abbreviationsConfig,
+  delimiters: makeDelimiters,
+  abbreviations: makeAbbreviations,
   ordinal: float => string,
-  currency: currencyConfig,
+  currency: makeCurrency,
 };
 [@bs.deriving abstract]
 type makeRegExps = {
@@ -49,7 +49,8 @@ type numeral = {
   options: makeOptions,
 };
 /*******************************************************************************
-  The use this to create Numeral objects that return different types.
+  The use this to create Numeral instances that accept and return specific
+  types.
  ******************************************************************************/
 module Make =
        (
@@ -64,15 +65,13 @@ module Make =
   [@bs.send] external reset: numeral => unit = "reset";
   [@bs.send]
   external registerLocale_:
-    (numeral, ~what: string, ~key: string, ~value: makeLocale) =>
-    makeLocale =
+    (numeral, ~what: string, ~key: string, ~value: makeLocale) => makeLocale =
     "register";
   let registerLocale = (key, value) =>
     numeral->registerLocale_(~what="locale", ~key, ~value);
   [@bs.send]
   external registerFormat_:
-    (numeral, ~what: string, ~key: string, ~value: makeFormat) =>
-    makeFormat =
+    (numeral, ~what: string, ~key: string, ~value: makeFormat) => makeFormat =
     "register";
 
   let registerFormat = (key, value) =>
@@ -80,18 +79,16 @@ module Make =
   [@bs.send] external locale_: (numeral, ~key: string=?) => string = "locale";
   let locale = (~key) => numeral->locale_(~key);
   [@bs.send]
-  external localeData_: (numeral, ~key: string=?) => makeLocale =
-    "localeData";
+  external localeData_: (numeral, ~key: string=?) => makeLocale = "localeData";
   let localeData = (~key) => numeral->localeData_(~key);
   [@bs.send] external zeroFormat_: (numeral, string) => unit = "zeroFormat";
-  let zeroFormat = str => numeral->zeroFormat_(str);
+  let setZeroFormat = str => numeral->zeroFormat_(str);
   /* [@bs.send] external nullFormat: (t, string) => unit = "nullFormat"; */
   [@bs.send]
   external setDefaultFormat_: (numeral, string) => unit = "defaultFormat";
   let setDefaultFormat = str => numeral->setDefaultFormat_(str);
   [@bs.send] external validate_: (numeral, 'a, 'b) => bool = "validate";
   let validate = (a, b) => numeral->validate_(a, b);
-
   /*****************************************************************************
     Numeral instances
    ****************************************************************************/
@@ -136,10 +133,10 @@ module String =
     let parseOutput = Js.Nullable.toOption;
   });
 /* It probably doesn't make sense to add other types, like `int`, because the
-  we can't guarantee that it will stay an int once it goes to the JS side. */
+   we can't guarantee that it will stay an int once it goes to the JS side. */
 module Helpers = {
-/* These bindings aren't well tested or documented. Use with caution.
-   Pull requests and bug reports are welcome! */
+  /* These bindings aren't well tested or documented. Use with caution.
+     Pull requests and bug reports are welcome! */
   type t;
   [@bs.get] external getHelpers: numeral => t = "_";
 
@@ -199,8 +196,7 @@ module Helpers = {
     ->getHelpers
     ->getToFixed(value, maxDecimals, roundingFunction, optionals);
 };
-
-/* This is a hack to make sure that it works on Babel ES6 and commonJs.
+/* This is a hack to make sure that it works on both Babel ES6 and commonJs.
    This probably isn't safe or stable.*/
 %raw
 {|if (Numeral.default === undefined) {

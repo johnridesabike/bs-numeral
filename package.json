@@ -6,8 +6,7 @@
     "build": "bsb -make-world",
     "watch": "bsb -w",
     "clean": "bsb -clean-world",
-    "test": "jest --watchAll",
-    "bsdoc": "bsdoc build BsNumeral"
+    "test": "jest --watchAll"
   },
   "keywords": [
     "reason",

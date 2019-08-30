@@ -8,25 +8,25 @@ type makeOptions = {
 };
 
 [@bs.deriving abstract]
-type delimitersConfig = {
+type makeDelimiters = {
   thousands: string,
   decimal: string,
 };
 [@bs.deriving abstract]
-type abbreviationsConfig = {
+type makeAbbreviations = {
   thousand: string,
   million: string,
   billion: string,
   trillion: string,
 };
 [@bs.deriving abstract]
-type currencyConfig = {symbol: string};
+type makeCurrency = {symbol: string};
 [@bs.deriving abstract]
 type makeLocale = {
-  delimiters: delimitersConfig,
-  abbreviations: abbreviationsConfig,
+  delimiters: makeDelimiters,
+  abbreviations: makeAbbreviations,
   ordinal: float => string,
-  currency: currencyConfig,
+  currency: makeCurrency,
 };
 [@bs.deriving abstract]
 type makeRegExps = {
@@ -52,7 +52,7 @@ let registerLocale: (string, makeLocale) => makeLocale;
 let registerFormat: (string, makeFormat) => makeFormat;
 let locale: (~key: string) => string;
 let localeData: (~key: string) => makeLocale;
-let zeroFormat: string => unit;
+let setZeroFormat: string => unit;
 let setDefaultFormat: string => unit;
 let validate: ('a, 'b) => bool;
 type t;
@@ -79,7 +79,7 @@ module String:
     let registerFormat: (string, makeFormat) => makeFormat;
     let locale: (~key: string) => string;
     let localeData: (~key: string) => makeLocale;
-    let zeroFormat: string => unit;
+    let setZeroFormat: string => unit;
     let setDefaultFormat: string => unit;
     let validate: ('a, 'b) => bool;
     type t;
