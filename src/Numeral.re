@@ -125,6 +125,7 @@ module Float =
   });
 /* `Float` is the default, initially opened, module */
 include Float;
+[@bs.module "numeral"] external fromInt: int => t = "default";
 module String =
   Make({
     type input = string;

@@ -1,6 +1,6 @@
 {
   "name": "@johnridesabike/bs-numeral",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Bucklescript bindings for Numeral.js",
   "scripts": {
     "build": "bsb -make-world",
@@ -26,10 +26,10 @@
     "numeral": "^2.0.6"
   },
   "peerDependencies": {
-    "bs-platform": "^5.0.6"
+    "bs-platform": "^5.2.1"
   },
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.9",
-    "bs-platform": "^5.0.6"
+    "bs-platform": "^5.2.1"
   }
 }

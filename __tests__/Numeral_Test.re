@@ -227,4 +227,9 @@ describe("Numeral", () => {
       ->Numeral.format("%");
     expect(output) |> toBe("69%");
   });
+  describe("Type testing", () =>
+    test("It can parse integers", () =>
+      expect(fromInt(1)->value) |> toBe(1.0)
+    )
+  );
 });
