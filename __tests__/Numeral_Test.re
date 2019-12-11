@@ -179,9 +179,9 @@ describe("Numeral", () => {
   test("Can register a custom format", () => {
     registerFormat(
       "percentage2",
-      makeFormat(
+      Format.make(
         ~regexps=
-          makeRegExps(
+          RegExps.make(
             ~format=[%bs.re "/(test)/"],
             ~unformat=[%bs.re "/(test)/"],
           ),

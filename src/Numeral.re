@@ -1,52 +1,97 @@
 /*******************************************************************************
   Helper types
  ******************************************************************************/
-[@bs.deriving abstract]
-type makeOptions = {
-  currentLocale: string,
-  zeroFormat: string,
-  nullFormat: string,
-  defaultFormat: string,
-  scalePercentBy100: bool,
+
+module Options = {
+  type t = {
+    currentLocale: string,
+    zeroFormat: string,
+    nullFormat: string,
+    defaultFormat: string,
+    scalePercentBy100: bool,
+  };
+  let make =
+      (
+        ~currentLocale,
+        ~zeroFormat,
+        ~nullFormat,
+        ~defaultFormat,
+        ~scalePercentBy100,
+      ) => {
+    currentLocale,
+    zeroFormat,
+    nullFormat,
+    defaultFormat,
+    scalePercentBy100,
+  };
 };
-[@bs.deriving abstract]
-type makeDelimiters = {
-  thousands: string,
-  decimal: string,
+module Delimiters = {
+  type t = {
+    thousands: string,
+    decimal: string,
+  };
+  let make = (~thousands, ~decimal) => {thousands, decimal};
 };
-[@bs.deriving abstract]
-type makeAbbreviations = {
-  thousand: string,
-  million: string,
-  billion: string,
-  trillion: string,
+module Abbreviations = {
+  type t = {
+    thousand: string,
+    million: string,
+    billion: string,
+    trillion: string,
+  };
+  let make = (~thousand, ~million, ~billion, ~trillion) => {
+    thousand,
+    million,
+    billion,
+    trillion,
+  };
 };
-[@bs.deriving abstract]
-type makeCurrency = {symbol: string};
-[@bs.deriving abstract]
-type makeLocale = {
-  delimiters: makeDelimiters,
-  abbreviations: makeAbbreviations,
-  ordinal: float => string,
-  currency: makeCurrency,
+module Currency = {
+  type t = {symbol: string};
+  let make = (~symbol) => {symbol: symbol};
 };
-[@bs.deriving abstract]
-type makeRegExps = {
-  format: Js.Re.t,
-  unformat: Js.Re.t,
+module Locale = {
+  type t = {
+    delimiters: Delimiters.t,
+    abbreviations: Abbreviations.t,
+    ordinal: float => string,
+    currency: Currency.t,
+  };
+  let make = (~delimiters, ~abbreviations, ~ordinal, ~currency) => {
+    delimiters,
+    abbreviations,
+    ordinal,
+    currency,
+  };
 };
-[@bs.deriving abstract]
-type makeFormat = {
-  regexps: makeRegExps,
-  [@bs.as "format"]
-  formatFn: (float, string, float => float) => string,
-  [@bs.as "unformat"]
-  unformatFn: string => float,
+module RegExps = {
+  type t = {
+    format: Js.Re.t,
+    unformat: Js.Re.t,
+  };
+  let make = (~format, ~unformat) => {format, unformat};
 };
-[@bs.deriving abstract]
+module Format = {
+  type formatFn = (float, string, float => float) => string;
+  type unformatFn = string => float;
+
+  type t = {
+    regexps: RegExps.t,
+    [@bs.as "format"]
+    formatFn,
+    [@bs.as "unformat"]
+    unformatFn,
+  };
+  let make = (~regexps, ~formatFn, ~unformatFn) => {
+    regexps,
+    formatFn,
+    unformatFn,
+  };
+};
+
 type numeral = {
   version: string,
-  options: makeOptions,
+  options: Options.t,
 };
 /*******************************************************************************
   The use this to create Numeral instances that accept and return specific
@@ -65,13 +110,13 @@ module Make =
   [@bs.send] external reset: numeral => unit = "reset";
   [@bs.send]
   external registerLocale_:
-    (numeral, ~what: string, ~key: string, ~value: makeLocale) => makeLocale =
+    (numeral, ~what: string, ~key: string, ~value: Locale.t) => Locale.t =
     "register";
   let registerLocale = (key, value) =>
     numeral->registerLocale_(~what="locale", ~key, ~value);
   [@bs.send]
   external registerFormat_:
-    (numeral, ~what: string, ~key: string, ~value: makeFormat) => makeFormat =
+    (numeral, ~what: string, ~key: string, ~value: Format.t) => Format.t =
     "register";
 
   let registerFormat = (key, value) =>
@@ -79,7 +124,7 @@ module Make =
   [@bs.send] external locale_: (numeral, ~key: string=?) => string = "locale";
   let locale = (~key) => numeral->locale_(~key);
   [@bs.send]
-  external localeData_: (numeral, ~key: string=?) => makeLocale = "localeData";
+  external localeData_: (numeral, ~key: string=?) => Locale.t = "localeData";
   let localeData = (~key) => numeral->localeData_(~key);
   [@bs.send] external zeroFormat_: (numeral, string) => unit = "zeroFormat";
   let setZeroFormat = str => numeral->zeroFormat_(str);

@@ -1,10 +1,10 @@
 {
   "name": "@johnridesabike/bs-numeral",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "Bucklescript bindings for Numeral.js",
   "scripts": {
     "build": "bsb -make-world",
-    "watch": "bsb -w",
+    "watch": "bsb -make-world -clean-world -w",
     "clean": "bsb -clean-world",
     "test": "jest --watchAll"
   },
@@ -26,10 +26,14 @@
     "numeral": "^2.0.6"
   },
   "peerDependencies": {
-    "bs-platform": "^5.2.1"
+    "bs-platform": "^7.0.1"
   },
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.9",
-    "bs-platform": "^5.2.1"
+    "bs-platform": "^7.0.1"
+  },
+  "warnings": {
+    "number": "+A-48",
+    "error": "+A-3-44-102"
   }
 }
