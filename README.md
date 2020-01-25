@@ -20,7 +20,7 @@ And then add the project to the `bs-dependencies` array in your `bsconfig.json` 
 
 ## 🧐 Why use this bs-numeral?
 
-There are a few other Numeral.js bindings, and it's easy to write an simple binding yourself if you only use a few of its functions. This aims to be a complete implementation, however. To help ensure accuracy, it uses (mostly) the same tests as vanilla Numeral.js. The goal of this project is to provide a hassle-free replacement for people used to using Numeral.js in their JavaScript.
+There are a few other Numeral.js bindings, and it's easy to write an simple binding yourself if you only use a few of its functions. This         aims to be a complete implementation, however. To help ensure accuracy, it uses (mostly) the same tests as vanilla Numeral.js. The goal of this project is to provide a hassle-free replacement for people used to using Numeral.js in their JavaScript.
 
 ## 📝 Documentation
 
@@ -35,8 +35,11 @@ Notable differences between this binding and vanilla Numeral.js:
 - bs-numeral cannot recieve `Null` as input.
 - Some functions are not bound because they're irrelevant in ReasonML, such as `isNumeral`.
 - Some functions that can take several optional inputs are split into multiple functions. For example: `numeral.format` has been turned into `Numeral.defaultFormat`, `Numeral.format`, and `Numeral.formatRound`.
-- The math functions, `add`, `subtract`, etc., can take any type as input. (That may change in the future to add more type-safety.)
+- The math functions, `add`, `subtract`, etc., can only take floats (or strings, for the `String` module).
 - The helper functions (`numeral._`) are available in `Numeral.Helpers`. They are not documented or tested by vanilla Numeral.js, so their bindings here are not well tested either. Some of them are irrelevant in ReasonML anyway.
+- Numeral.js uses has several functions that accept or return JS objects for configuration. This binding uses BuckleScript abstract types as a replacement, which are rely on helper functions. For example, the confguration object is created with `makeConfig`, and the format configuration object is created with `makeFormat`. [The exact bindings are at the top of the rei file](/src/Numeral.rei).
+
+You'll notice that this binding is very strict about what types are accepted as input. Numeral.js can throw a runtime error with malformed inputs, or simply return `null`. Strictness helps ensure that corrupt data doesn't escape into the rest of your code. If you find the strictness too limiting, open an issue with your situation.
 
 # Build
 ```
